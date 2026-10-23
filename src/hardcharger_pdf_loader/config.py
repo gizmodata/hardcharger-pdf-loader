@@ -1,14 +1,12 @@
-"""Connection settings for the target GizmoSQL server."""
+"""Connection settings for the target Hardcharger server."""
 
 from __future__ import annotations
 
 import os
 from dataclasses import dataclass
 
-from adbc_driver_gizmosql import DatabaseOptions
-from adbc_driver_gizmosql import dbapi as gizmosql
+from adbc_driver_hardcharger import dbapi as hardcharger
 
-DEFAULT_MAX_MESSAGE_SIZE_BYTES = 64 * 1024 * 1024  # client-side gRPC limit; driver default is 16 MiB
 EPHEMERAL_CATALOGS = frozenset({"memory", "temp"})
 
 
@@ -20,57 +18,52 @@ def _env_bool(name: str, default: bool) -> bool:
 
 
 @dataclass
-class GizmoSQLSettings:
+class HardchargerSettings:
     hostname: str
     port: int = 31337
     username: str | None = None
     password: str | None = None
     use_tls: bool = True
     tls_skip_verify: bool = False
-    max_message_size_bytes: int = DEFAULT_MAX_MESSAGE_SIZE_BYTES
 
     @classmethod
-    def from_env(cls) -> GizmoSQLSettings:
-        hostname = os.environ.get("GIZMOSQL_HOSTNAME")
+    def from_env(cls) -> HardchargerSettings:
+        hostname = os.environ.get("HARDCHARGER_HOSTNAME")
         if not hostname:
-            raise ValueError("GIZMOSQL_HOSTNAME is not set (put it in .env or the environment)")
+            raise ValueError("HARDCHARGER_HOSTNAME is not set (put it in .env or the environment)")
         return cls(
             hostname=hostname,
-            port=int(os.environ.get("GIZMOSQL_PORT", "31337")),
-            username=os.environ.get("GIZMOSQL_USERNAME"),
-            password=os.environ.get("GIZMOSQL_PASSWORD"),
-            use_tls=_env_bool(name="GIZMOSQL_USE_TLS", default=True),
-            tls_skip_verify=_env_bool(name="GIZMOSQL_TLS_SKIP_VERIFY", default=False),
-            max_message_size_bytes=int(
-                os.environ.get("GIZMOSQL_MAX_MESSAGE_SIZE_BYTES", str(DEFAULT_MAX_MESSAGE_SIZE_BYTES))
-            ),
+            port=int(os.environ.get("HARDCHARGER_PORT", "31337")),
+            username=os.environ.get("HARDCHARGER_USERNAME"),
+            password=os.environ.get("HARDCHARGER_PASSWORD"),
+            use_tls=_env_bool(name="HARDCHARGER_USE_TLS", default=True),
+            tls_skip_verify=_env_bool(name="HARDCHARGER_TLS_SKIP_VERIFY", default=False),
         )
 
     @property
     def uri(self) -> str:
-        uri = f"gizmosql://{self.hostname}:{self.port}"
+        uri = f"hardcharger://{self.hostname}:{self.port}"
         if not self.use_tls:
-            uri += "?transport=tcp"
+            uri += "?tls=false"
         return uri
 
-    def connect(self, *, catalog: str | None = None, db_schema: str | None = None) -> gizmosql.Connection:
-        """Open a DBAPI connection with the gRPC max-message-size raised.
+    def connect(self, *, catalog: str | None = None, db_schema: str | None = None) -> hardcharger.Connection:
+        """Open a DBAPI connection over Warp SQL.
 
         ``catalog`` becomes the session's current catalog. It must already be attached on the
-        server (attaching requires the GizmoSQL admin role).
+        server (attaching requires the Hardcharger admin role).
         """
-        return gizmosql.connect(
-            self.uri,
+        return hardcharger.connect(
+            uri=self.uri,
             username=self.username,
             password=self.password,
             tls_skip_verify=self.tls_skip_verify,
             catalog=catalog,
             db_schema=db_schema,
-            db_kwargs={DatabaseOptions.WITH_MAX_MSG_SIZE.value: str(self.max_message_size_bytes)},
         )
 
 
-def resolve_target_catalog(conn: gizmosql.Connection, catalog: str | None) -> str:
+def resolve_target_catalog(conn: hardcharger.Connection, catalog: str | None) -> str:
     """Return the catalog to load into, refusing the server's ephemeral in-memory catalogs.
 
     A session's default catalog is whatever database the server was started with; on some
@@ -85,6 +78,6 @@ def resolve_target_catalog(conn: gizmosql.Connection, catalog: str | None) -> st
     if current in EPHEMERAL_CATALOGS:
         raise ValueError(
             f"The session's default catalog on this server is the ephemeral '{current}' catalog. "
-            "Pass --catalog (or set GIZMOSQL_CATALOG) to name a persistent catalog."
+            "Pass --catalog (or set HARDCHARGER_CATALOG) to name a persistent catalog."
         )
     return current

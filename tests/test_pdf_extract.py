@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 import pymupdf
 import pytest
 
-from gizmosql_pdf_loader.pdf_extract import (
+from hardcharger_pdf_loader.pdf_extract import (
     OcrSettings,
     extract_pages,
     inspect_pdf,
@@ -24,8 +24,8 @@ from gizmosql_pdf_loader.pdf_extract import (
             "D:20240704151138-05'30'",
             datetime(2024, 7, 4, 15, 11, 38, tzinfo=timezone(-timedelta(hours=5, minutes=30))),
         ),
-        ("D:20240704151138Z", datetime(2024, 7, 4, 15, 11, 38, tzinfo=timezone.utc)),
-        ("D:2024", datetime(2024, 1, 1, tzinfo=timezone.utc)),
+        ("D:20240704151138Z", datetime(2024, 7, 4, 15, 11, 38, tzinfo=UTC)),
+        ("D:2024", datetime(2024, 1, 1, tzinfo=UTC)),
         ("", None),
         (None, None),
         ("not a date", None),
@@ -57,7 +57,7 @@ def test_inspect_pdf(simple_pdf: Path):
     assert info.page_count == 3
     assert info.title == "Test Doc"
     assert info.author == "pytest"
-    assert info.pdf_created_at == datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    assert info.pdf_created_at == datetime(2025, 1, 1, 12, 0, 0, tzinfo=UTC)
     assert info.file_size_bytes == simple_pdf.stat().st_size
     assert info.sha256_hex == sha256_of_file(simple_pdf)
     assert not info.is_encrypted
@@ -150,9 +150,9 @@ def test_resolve_tessdata_uses_cache_without_downloading(tmp_path: Path, monkeyp
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
     # No installed Tesseract: get_tessdata() finds nothing (PyMuPDF also calls it with an explicit dir).
     monkeypatch.setattr(
-        "gizmosql_pdf_loader.pdf_extract.pymupdf.get_tessdata", lambda tessdata=None: tessdata
+        "hardcharger_pdf_loader.pdf_extract.pymupdf.get_tessdata", lambda tessdata=None: tessdata
     )
-    cache = tmp_path / "gizmosql-pdf-loader" / "tessdata"
+    cache = tmp_path / "hardcharger-pdf-loader" / "tessdata"
     with pytest.raises(RuntimeError, match="downloading is disabled"):
         resolve_tessdata(OcrSettings(language="eng", download=False))
     cache.mkdir(parents=True)
@@ -166,13 +166,10 @@ def test_ocr_with_language_data_only(image_only_pdf: Path, tmp_path: Path, monke
     monkeypatch.delenv("TESSDATA_PREFIX", raising=False)
     # No installed Tesseract: get_tessdata() finds nothing (PyMuPDF also calls it with an explicit dir).
     monkeypatch.setattr(
-        "gizmosql_pdf_loader.pdf_extract.pymupdf.get_tessdata", lambda tessdata=None: tessdata
+        "hardcharger_pdf_loader.pdf_extract.pymupdf.get_tessdata", lambda tessdata=None: tessdata
     )
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
-    try:
-        tessdata = resolve_tessdata(OcrSettings(language="eng"))  # downloads eng.traineddata (~4 MB)
-    except RuntimeError as exc:
-        pytest.skip(f"language data unavailable: {exc}")
+    tessdata = resolve_tessdata(OcrSettings(language="eng"))  # downloads eng.traineddata (~4 MB)
     assert extract_pages(image_only_pdf, ocr=None)[0].extraction_method == "none"
     pages = extract_pages(image_only_pdf, ocr=OcrSettings(language="eng", workers=1, tessdata=tessdata))
     assert pages[0].extraction_method == "ocr"

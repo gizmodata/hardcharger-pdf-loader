@@ -23,7 +23,7 @@ import urllib.request
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 import pymupdf
@@ -59,7 +59,7 @@ def parse_pdf_date(value: str | None) -> datetime | None:
         )
     except ValueError:
         return None
-    tz = timezone.utc
+    tz = UTC
     if g["sign"] in ("+", "-") and g["tzh"]:
         offset = timedelta(hours=int(g["tzh"]), minutes=int(g["tzm"] or 0))
         tz = timezone(-offset if g["sign"] == "-" else offset)
@@ -144,7 +144,7 @@ TESSDATA_URL = "https://github.com/tesseract-ocr/tessdata_fast/raw/main/{lang}.t
 
 def default_tessdata_dir() -> Path:
     base = os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache")
-    return Path(base) / "gizmosql-pdf-loader" / "tessdata"
+    return Path(base) / "hardcharger-pdf-loader" / "tessdata"
 
 
 def _languages(language: str) -> list[str]:
@@ -220,7 +220,7 @@ def inspect_pdf(path: Path) -> PdfFileInfo:
             mime_type=guess_mime_type(path),
             file_size_bytes=stat.st_size,
             sha256_hex=sha256_of_file(path),
-            file_modified_at=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+            file_modified_at=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
             page_count=doc.page_count,
             pdf_format=meta.get("format"),
             title=meta.get("title"),
@@ -280,7 +280,7 @@ def open_for_extraction(
     if not reveal_hidden_layers:
         yield path, []
         return
-    tmp_dir = Path(tempfile.mkdtemp(prefix="gizmosql-pdf-"))
+    tmp_dir = Path(tempfile.mkdtemp(prefix="hardcharger-pdf-"))
     try:
         copy_path = tmp_dir / path.name
         revealed = write_revealed_copy(src=path, dst=copy_path)

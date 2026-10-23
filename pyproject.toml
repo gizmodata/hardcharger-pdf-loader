@@ -3,57 +3,59 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gizmosql-pdf-loader"
-version = "0.1.2"
-description = "Load PDF files (bytes + extracted page text + metadata) into a GizmoSQL server over Arrow Flight SQL / ADBC."
+name = "hardcharger-pdf-loader"
+version = "0.1.0"
+description = "Load PDF files (bytes + extracted page text + metadata) into a Hardcharger server over Warp SQL / ADBC."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
+keywords = ["hardcharger", "pdf", "adbc", "warp-sql", "ocr", "full-text-search"]
 authors = [{ name = "GizmoData", email = "support@gizmodata.com" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Database",
 ]
 dependencies = [
-    "adbc-driver-gizmosql>=2.0.13",
-    "pyarrow>=18.0.0",
+    "adbc-driver-hardcharger>=2.0.2",
+    "pyarrow>=26.0.0",
     "pymupdf>=1.26.0",
     "click>=8.1",
     "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "build", "ruff"]
+dev = ["pytest>=8", "build", "ruff", "twine", "hardcharger==2.0.1"]
 
 [project.scripts]
-gizmosql-pdf-loader = "gizmosql_pdf_loader.cli:main"
+hardcharger-pdf-loader = "hardcharger_pdf_loader.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/gizmodata/gizmosql-pdf-loader"
-Repository = "https://github.com/gizmodata/gizmosql-pdf-loader"
-Issues = "https://github.com/gizmodata/gizmosql-pdf-loader/issues"
-Changelog = "https://github.com/gizmodata/gizmosql-pdf-loader/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/gizmodata/hardcharger-pdf-loader"
+Repository = "https://github.com/gizmodata/hardcharger-pdf-loader"
+Issues = "https://github.com/gizmodata/hardcharger-pdf-loader/issues"
+Changelog = "https://github.com/gizmodata/hardcharger-pdf-loader/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gizmosql_pdf_loader"]
+packages = ["src/hardcharger_pdf_loader"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/", "tests/", "examples/", "README.md", "CHANGELOG.md", "LICENSE"]
+include = ["src/", "tests/", "examples/", "README.md", "CHANGELOG.md", "LICENSE", "docs/", ".github/", "main.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: runs against a real Hardcharger server"]
 
 [tool.ruff]
 line-length = 110
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "W"]

@@ -1,4 +1,4 @@
-"""Command-line interface: ``gizmosql-pdf-loader load|list|search``."""
+"""Command-line interface: ``hardcharger-pdf-loader load|list|search``."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import click
 from dotenv import load_dotenv
 
 from . import __version__
-from .config import GizmoSQLSettings, resolve_target_catalog
+from .config import HardchargerSettings, resolve_target_catalog
 from .fts import DEFAULT_FTS_SCHEMA, MODE_SKIP, FtsUnavailableError, build_fts_index, plan_fts
 from .loader import (
     DEFAULT_CHUNK_SIZE_BYTES,
@@ -26,14 +26,14 @@ from .pdf_extract import OcrSettings, extract_pages, inspect_pdf, open_for_extra
 def _connection_options(func):
     func = click.option(
         "--catalog",
-        envvar="GIZMOSQL_CATALOG",
+        envvar="HARDCHARGER_CATALOG",
         default=None,
         show_envvar=True,
         help="Target catalog (an attached database). Required unless the session default is persistent.",
     )(func)
     func = click.option(
         "--schema",
-        envvar="GIZMOSQL_SCHEMA",
+        envvar="HARDCHARGER_SCHEMA",
         default=DEFAULT_SCHEMA,
         show_default=True,
         show_envvar=True,
@@ -45,7 +45,7 @@ def _connection_options(func):
 def _fts_options(func):
     func = click.option(
         "--fts-catalog",
-        envvar="GIZMOSQL_FTS_CATALOG",
+        envvar="HARDCHARGER_FTS_CATALOG",
         default=None,
         show_envvar=True,
         help="DuckDB (non-DuckLake) catalog to hold a copy-based full-text index. Only needed when the "
@@ -53,7 +53,7 @@ def _fts_options(func):
     )(func)
     func = click.option(
         "--fts-schema",
-        envvar="GIZMOSQL_FTS_SCHEMA",
+        envvar="HARDCHARGER_FTS_SCHEMA",
         default=DEFAULT_FTS_SCHEMA,
         show_default=True,
         show_envvar=True,
@@ -87,11 +87,11 @@ def _rebuild_index(conn, *, catalog: str, schema: str, fts_catalog: str | None, 
     type=click.Path(dir_okay=False, path_type=Path),
     default=Path(".env"),
     show_default=True,
-    help="Dotenv file with GIZMOSQL_HOSTNAME/PORT/USERNAME/PASSWORD (and optionally CATALOG/SCHEMA).",
+    help="Dotenv file with HARDCHARGER_HOSTNAME/PORT/USERNAME/PASSWORD (and optionally CATALOG/SCHEMA).",
 )
 @click.option("-v", "--verbose", is_flag=True, help="Debug-level logging.")
 def main(env_file: Path, verbose: bool) -> None:
-    """Load PDF files (bytes, page text, metadata) into a GizmoSQL server."""
+    """Load PDF files (bytes, page text, metadata) into a Hardcharger server."""
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -115,7 +115,7 @@ def main(env_file: Path, verbose: bool) -> None:
     type=click.IntRange(min=1, max=512),
     default=DEFAULT_CHUNK_SIZE_BYTES // (1024 * 1024),
     show_default=True,
-    help="Size of each stored file chunk (must stay below the gRPC message limit).",
+    help="Size of each stored file chunk sent in an Arrow IPC batch over Warp SQL.",
 )
 @click.option("--replace", is_flag=True, help="Reload documents whose SHA-256 is already present.")
 @click.option(
@@ -138,7 +138,7 @@ def main(env_file: Path, verbose: bool) -> None:
     show_envvar=True,
     type=click.Path(file_okay=False, path_type=str),
     help="Directory with Tesseract <lang>.traineddata files. Default: an installed Tesseract's folder if it "
-    "has the language, else ~/.cache/gizmosql-pdf-loader/tessdata (downloaded on first use).",
+    "has the language, else ~/.cache/hardcharger-pdf-loader/tessdata (downloaded on first use).",
 )
 @click.option(
     "--ocr-download/--no-ocr-download",
@@ -224,7 +224,7 @@ def load(
             )
         return
 
-    settings = GizmoSQLSettings.from_env()
+    settings = HardchargerSettings.from_env()
     with settings.connect(catalog=catalog) as conn:
         options.catalog = resolve_target_catalog(conn, catalog)
         ensure_schema(conn, schema=schema, catalog=options.catalog)
@@ -260,7 +260,7 @@ def index(catalog, schema, fts_catalog, fts_schema) -> None:
     --fts-catalog names a DuckDB catalog to hold a copy. Loading the fts extension needs
     the admin role; rebuild after a restart if the copy catalog is the in-memory one.
     """
-    settings = GizmoSQLSettings.from_env()
+    settings = HardchargerSettings.from_env()
     with settings.connect(catalog=catalog) as conn:
         target_catalog = resolve_target_catalog(conn, catalog)
         ensure_schema(conn, schema=schema, catalog=target_catalog)  # idempotent; applies migrations
@@ -275,7 +275,7 @@ def index(catalog, schema, fts_catalog, fts_schema) -> None:
 @_connection_options
 def list_documents(catalog, schema) -> None:
     """List documents already loaded into the target catalog/schema."""
-    settings = GizmoSQLSettings.from_env()
+    settings = HardchargerSettings.from_env()
     with settings.connect(catalog=catalog) as conn, conn.cursor() as cur:
         qs = qualified_schema(resolve_target_catalog(conn, catalog), schema)
         cur.execute(
@@ -309,7 +309,7 @@ def list_documents(catalog, schema) -> None:
 )
 def search(term: str, catalog, schema, limit: int, ranked: bool) -> None:
     """Search page text; prints file, page and a snippet."""
-    settings = GizmoSQLSettings.from_env()
+    settings = HardchargerSettings.from_env()
     with settings.connect(catalog=catalog) as conn, conn.cursor() as cur:
         qs = qualified_schema(resolve_target_catalog(conn, catalog), schema)
         if ranked:

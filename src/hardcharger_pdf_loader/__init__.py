@@ -1,10 +1,10 @@
-"""Load PDF files into a GizmoSQL server: file bytes (chunked), extracted page text, and metadata.
+"""Load PDF files into a Hardcharger server: file bytes (chunked), extracted page text, and metadata.
 
 Library use::
 
-    from gizmosql_pdf_loader import GizmoSQLSettings, LoadOptions, ensure_schema, load_pdf
+    from hardcharger_pdf_loader import HardchargerSettings, LoadOptions, ensure_schema, load_pdf
 
-    settings = GizmoSQLSettings(hostname="gizmosql.example.com", port=443, username="me", password="...")
+    settings = HardchargerSettings(hostname="db.example.com", port=443, username="me", password="...")
     with settings.connect(catalog="my_lake") as conn:
         ensure_schema(conn, catalog="my_lake", schema="pdf_docs")
         result = load_pdf(conn, path="manual.pdf", options=LoadOptions(catalog="my_lake", schema="pdf_docs"))
@@ -13,11 +13,11 @@ Library use::
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("gizmosql-pdf-loader")
+    __version__ = version("hardcharger-pdf-loader")
 except PackageNotFoundError:  # running from a source checkout without an install
     __version__ = "0.0.0+dev"
 
-from .config import GizmoSQLSettings, resolve_target_catalog  # noqa: E402
+from .config import HardchargerSettings, resolve_target_catalog  # noqa: E402
 from .fts import FtsPlan, FtsUnavailableError, build_fts_index, plan_fts  # noqa: E402
 from .loader import (  # noqa: E402
     DEFAULT_CHUNK_SIZE_BYTES,
@@ -37,7 +37,7 @@ __all__ = [
     "DEFAULT_SCHEMA",
     "FtsPlan",
     "FtsUnavailableError",
-    "GizmoSQLSettings",
+    "HardchargerSettings",
     "LoadOptions",
     "LoadResult",
     "OcrSettings",

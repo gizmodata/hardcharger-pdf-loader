@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pyarrow as pa
 
-from gizmosql_pdf_loader.loader import (
+from hardcharger_pdf_loader.loader import (
     CHUNKS_SCHEMA,
     PAGES_PER_BATCH,
     document_id_for,
@@ -12,7 +12,7 @@ from gizmosql_pdf_loader.loader import (
     qualified_schema,
     schema_ddl,
 )
-from gizmosql_pdf_loader.pdf_extract import PageRecord
+from hardcharger_pdf_loader.pdf_extract import PageRecord
 
 
 def test_document_id_is_deterministic():

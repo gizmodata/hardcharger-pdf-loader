@@ -1,22 +1,39 @@
-# gizmosql-pdf-loader
+<p align="center">
+  <a href="https://github.com/gizmodata/hardcharger">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/gizmodata/hardcharger-pdf-loader/main/docs/assets/hardcharger-banner-dark.png">
+      <img src="https://raw.githubusercontent.com/gizmodata/hardcharger-pdf-loader/main/docs/assets/hardcharger-banner-light.png" alt="Hardcharger™" width="400">
+    </picture>
+  </a>
+</p>
 
-[<img src="https://img.shields.io/badge/GitHub-gizmodata%2Fgizmosql--pdf--loader-blue.svg?logo=Github">](https://github.com/gizmodata/gizmosql-pdf-loader)
-[<img src="https://img.shields.io/badge/GitHub-gizmodata%2Fgizmosql--public-blue.svg?logo=Github">](https://github.com/gizmodata/gizmosql-public)
-[![gizmosql-pdf-loader-ci](https://github.com/gizmodata/gizmosql-pdf-loader/actions/workflows/ci.yml/badge.svg)](https://github.com/gizmodata/gizmosql-pdf-loader/actions/workflows/ci.yml)
-[![Supported Python Versions](https://img.shields.io/pypi/pyversions/gizmosql-pdf-loader)](https://pypi.org/project/gizmosql-pdf-loader/)
-[![PyPI version](https://badge.fury.io/py/gizmosql-pdf-loader.svg)](https://badge.fury.io/py/gizmosql-pdf-loader)
-[![PyPI Downloads](https://img.shields.io/pepy/dt/gizmosql-pdf-loader.svg)](https://pypi.org/project/gizmosql-pdf-loader/)
+<h1 align="center">Hardcharger™ PDF Loader</h1>
 
-Load PDF files into a [GizmoSQL](https://gizmodata.com/gizmosql) server over Arrow Flight SQL / ADBC so that
-SQL clients (and GizmoSQL-connected MCP servers) can **search the text** of product manuals and **download the
-original files**.
+<p align="center">
+  <a href="https://github.com/gizmodata/hardcharger-pdf-loader/actions/workflows/ci.yml"><img src="https://github.com/gizmodata/hardcharger-pdf-loader/actions/workflows/ci.yml/badge.svg" alt="CI: full suite on Python 3.11–3.15"></a>
+  <a href="https://pypi.org/project/hardcharger-pdf-loader/"><img src="https://img.shields.io/pypi/v/hardcharger-pdf-loader?logo=pypi" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/hardcharger-pdf-loader/"><img src="https://img.shields.io/badge/Python-3.11–3.15-3776AB?logo=python&amp;logoColor=white" alt="Python 3.11–3.15"></a>
+  <a href="https://pypi.org/project/hardcharger-pdf-loader/"><img src="https://img.shields.io/pepy/dt/hardcharger-pdf-loader.svg" alt="PyPI downloads"></a>
+  <a href="https://github.com/gizmodata/hardcharger-adbc"><img src="https://img.shields.io/badge/driver-Hardcharger%20ADBC-f15a24.svg" alt="Hardcharger ADBC driver"></a>
+  <a href="https://github.com/gizmodata/warp-sql"><img src="https://img.shields.io/badge/protocol-Warp%20SQL-31a8db.svg" alt="Warp SQL protocol"></a>
+  <a href="https://github.com/gizmodata/hardcharger-pdf-loader/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg" alt="Apache 2.0 license"></a>
+  <a href="https://gizmodata.com"><img src="https://img.shields.io/badge/by-GizmoData%E2%84%A2-f15a24.svg" alt="GizmoData™"></a>
+</p>
+
+Load PDF files into a [Hardcharger™](https://github.com/gizmodata/hardcharger) server over
+[Warp SQL](https://github.com/gizmodata/warp-sql) / ADBC so SQL clients and
+[Hardcharger MCP](https://github.com/gizmodata/hardcharger-mcp) agents can **search the text**
+and **download the original files**.
+
+Adapted from [gizmosql-pdf-loader](https://github.com/gizmodata/gizmosql-pdf-loader), with its
+complete test suite ported to the Hardcharger server and `adbc-driver-hardcharger`.
 
 For every PDF the loader stores:
 
 | What | Where | Notes |
 |---|---|---|
 | File metadata | `documents` | name, path, MIME type, size, SHA-256, page count, PDF info (title, author, creator, producer, dates), encryption, optional-content layers, load stats |
-| File bytes | `document_chunks` | fixed-size chunks (default 8 MiB) so no Arrow Flight message exceeds the gRPC limit and any client can page through them |
+| File bytes | `document_chunks` | fixed-size chunks (default 8 MiB), streamed as Arrow IPC over Warp SQL |
 | Page text | `document_pages` | one row per page, with page label, size, rotation, image count and how the text was obtained (`native`, `ocr`, `none`) |
 | Whole text | `document_text` (view) | pages joined with form-feed characters |
 | Search helpers | `search_pages(term)`, `search_pages_ranked(term, top_k)` (table macros) | case-insensitive substring search with a snippet; BM25-ranked full-text search (stemmed) |
@@ -28,14 +45,16 @@ the loader de-duplicates on SHA-256 itself).
 
 ```shell
 python3 -m venv .venv && . .venv/bin/activate
-pip install gizmosql-pdf-loader          # or: pip install dist/gizmosql_pdf_loader-*.whl
+pip install hardcharger-pdf-loader          # or: pip install dist/hardcharger_pdf_loader-*.whl
 ```
 
-Dependencies: `adbc-driver-gizmosql` (>= 2.0.13), `pyarrow`, `pymupdf`, `click`, `python-dotenv`.
+Python **3.11–3.15**. Tested with Hardcharger server **2.0.0** and ADBC driver **2.0.2**.
+
+Dependencies: `adbc-driver-hardcharger` (>= 2.0.2), `pyarrow`, `pymupdf`, `click`, `python-dotenv`.
 
 OCR of image-only pages needs no extra install: the Tesseract engine ships inside the PyMuPDF wheel, and the
 only external piece, the trained language data (`eng.traineddata`, about 4 MB), is downloaded on first use into
-`~/.cache/gizmosql-pdf-loader/tessdata` from the [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast)
+`~/.cache/hardcharger-pdf-loader/tessdata` from the [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast)
 repository. An installed Tesseract's language folder (or `--tessdata` / `TESSDATA_PREFIX`) is used instead when
 present; `--no-ocr-download` forbids the download. Without language data, image-only pages are loaded with empty
 text and a warning.
@@ -45,16 +64,15 @@ text and a warning.
 Create a `.env` in the working directory (or export the variables):
 
 ```dotenv
-GIZMOSQL_HOSTNAME=gizmosql.example.com
-GIZMOSQL_PORT=443
-GIZMOSQL_USERNAME=me@example.com
-GIZMOSQL_PASSWORD=...
-GIZMOSQL_CATALOG=my_lake          # target catalog (must already be attached on the server)
-GIZMOSQL_SCHEMA=pdf_docs          # target schema (created if missing); default: pdf_docs
+HARDCHARGER_HOSTNAME=hardcharger.example.com
+HARDCHARGER_PORT=443
+HARDCHARGER_USERNAME=me@example.com
+HARDCHARGER_PASSWORD=...
+HARDCHARGER_CATALOG=my_lake          # target catalog (must already be attached on the server)
+HARDCHARGER_SCHEMA=pdf_docs          # target schema (created if missing); default: pdf_docs
 # optional
-GIZMOSQL_USE_TLS=true             # false -> gizmosql://host:port?transport=tcp
-GIZMOSQL_TLS_SKIP_VERIFY=false
-GIZMOSQL_MAX_MESSAGE_SIZE_BYTES=67108864   # client-side gRPC limit (driver default is 16 MiB)
+HARDCHARGER_USE_TLS=true             # false -> hardcharger://host:port?tls=false
+HARDCHARGER_TLS_SKIP_VERIFY=false
 ```
 
 Set the catalog explicitly. A session's default catalog is whatever database the server was started with,
@@ -65,39 +83,27 @@ or `temp` so tables can't silently land somewhere that vanishes on restart.
 
 ```shell
 # Load every *.pdf in a directory (or pass explicit file paths)
-gizmosql-pdf-loader load --source-dir source_pdf_files
+hardcharger-pdf-loader load --source-dir source_pdf_files
 
 # Inspect/extract without connecting to the server
-gizmosql-pdf-loader load --dry-run --source-dir source_pdf_files
+hardcharger-pdf-loader load --dry-run --source-dir source_pdf_files
 
 # What is loaded?
-gizmosql-pdf-loader list
+hardcharger-pdf-loader list
 
 # Search page text: substring match, or BM25-ranked via the full-text index
-gizmosql-pdf-loader search "hydraulic pump" --limit 5
-gizmosql-pdf-loader search "hydraulic pump relief valves" --ranked --limit 5
+hardcharger-pdf-loader search "hydraulic pump" --limit 5
+hardcharger-pdf-loader search "hydraulic pump relief valves" --ranked --limit 5
 
 # (Re)build the full-text index (also done automatically at the end of `load`)
-gizmosql-pdf-loader index
+hardcharger-pdf-loader index
 ```
 
-Output of a real load (six equipment manuals, 641 MB in total, into a DuckLake catalog backed by S3):
-
-```
-status            size chunks  pages w/text   ocr       chars    secs  file
-loaded      73,588,282      9    457    457     0     561,719    46.7  operator-manual-1.pdf
-loaded      74,815,458      9    424    424     0     556,911    52.5  operator-manual-2.pdf
-loaded     113,837,480     14   1688   1688     0   1,217,423    29.8  parts-manual-1.pdf
-loaded       6,783,584      1     84     84     0      60,788    10.0  parts-manual-2.pdf
-loaded     359,084,382     43   3004      6     0          26   105.6  shop-manual-1.pdf
-loaded      12,740,509      2     94      0     0           0    12.5  shop-manual-2.pdf
-```
-
-Useful `load` options (see `gizmosql-pdf-loader load --help` for all):
+Useful `load` options (see `hardcharger-pdf-loader load --help` for all):
 
 | Option | Default | Purpose |
 |---|---|---|
-| `--chunk-size-mib N` | 8 | Size of each stored chunk; keep it below the gRPC message limit of the clients that will download |
+| `--chunk-size-mib N` | 8 | Size of each stored chunk, streamed in an Arrow IPC record batch |
 | `--replace` | off | Reload documents whose SHA-256 is already present (otherwise they are skipped) |
 | `--ocr/--no-ocr`, `--ocr-language`, `--ocr-dpi`, `--ocr-workers` | on, `eng`, 200, CPUs-1 | OCR of pages that have images but no text (`eng+jpn` style multi-language works if each file is available) |
 | `--tessdata DIR`, `--ocr-download/--no-ocr-download` | auto, on | Where Tesseract language data comes from (see Install) |
@@ -113,7 +119,7 @@ Documents are identified by a UUID derived from the file's SHA-256, so the same 
 ## Use as a Python library
 
 Everything the CLI does is a plain function call; the top-level package exports the pieces you need
-(`GizmoSQLSettings`, `LoadOptions`, `OcrSettings`, `ensure_schema`, `load_pdf`, `plan_fts`, `build_fts_index`,
+(`HardchargerSettings`, `LoadOptions`, `OcrSettings`, `ensure_schema`, `load_pdf`, `plan_fts`, `build_fts_index`,
 `inspect_pdf`, `extract_pages`, ...). `examples/load_with_python.py` is the runnable version of this:
 
 ```python
@@ -122,8 +128,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from gizmosql_pdf_loader import (
-    GizmoSQLSettings,
+from hardcharger_pdf_loader import (
+    HardchargerSettings,
     LoadOptions,
     OcrSettings,
     build_fts_index,
@@ -138,8 +144,8 @@ CATALOG = "my_lake"
 SCHEMA = "pdf_docs"
 source_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "source_pdf_files")
 
-# GizmoSQLSettings(hostname=..., port=..., username=..., password=...) also works without env vars.
-settings = GizmoSQLSettings.from_env()
+# HardchargerSettings(hostname=..., port=..., username=..., password=...) also works without env vars.
+settings = HardchargerSettings.from_env()
 
 with settings.connect(catalog=CATALOG) as conn:
     ensure_schema(conn, catalog=CATALOG, schema=SCHEMA)  # idempotent: tables, views, macros, migrations
@@ -238,20 +244,20 @@ and logs what it decides:
 | `ducklake` | **Skipped**, with the reason logged: an FTS index cannot be created inside a DuckLake catalog (the extension's internal tables use a NULL-typed column DuckLake rejects: "unsupported type NULL"). |
 | `ducklake` + `--fts-catalog <duckdb catalog>` | The page text is **copied** into `<fts-catalog>.<fts-schema>.document_pages` (a few MB for these manuals), the index is built there in under a second, and `search_pages_ranked` in the target schema points at it. |
 
-Loading the `fts` extension needs the GizmoSQL **admin** role; *querying* an existing index does not. The
-index is a snapshot: `load` refreshes it after loading new documents, and `gizmosql-pdf-loader index` rebuilds
+Loading the `fts` extension needs the Hardcharger **admin** role; *querying* an existing index does not. The
+index is a snapshot: `load` refreshes it after loading new documents, and `hardcharger-pdf-loader index` rebuilds
 it on demand. If the copy catalog is the server's in-memory `memory` catalog (as in the example below), the copy
 and index vanish on a server restart, so run `index` again afterwards (or point `--fts-catalog` at an attached DuckDB file).
 
 ```shell
 # DuckLake target: opt in to a copy-based index in the shared in-memory catalog
-gizmosql-pdf-loader index --fts-catalog memory
+hardcharger-pdf-loader index --fts-catalog memory
 ```
 
 ## Download a file from Python
 
-`examples/download_document.py` streams the chunks in order and verifies the SHA-256, so it works with the
-driver's default 16 MiB message limit:
+`examples/download_document.py` streams the chunks in order and verifies the SHA-256
+without buffering the whole PDF:
 
 ```shell
 python examples/download_document.py "parts-manual-2.pdf" /tmp/parts-manual-2.pdf
@@ -279,32 +285,51 @@ The loader records such layers in `documents.hidden_layer_names` and, by default
 deletes it, and sets `documents.hidden_layers_revealed = true`. The stored file bytes are always the original.
 Use this only for documents you are entitled to read outside the vendor's viewer.
 
-## How the gRPC message limit is handled
+## Streaming file bytes
 
-- Uploads use `cursor.adbc_ingest` with a `RecordBatchReader`, one record batch per chunk, so each Flight
-  message carries at most one chunk (8 MiB by default) plus a little overhead.
-- The 16 MiB figure is the **client driver's default** (`adbc.flight.sql.client_option.with_max_msg_size`),
-  not a server limit: a GizmoSQL server accepted and served back a single 256 MiB message in testing. The
-  loader raises its own limit to 64 MiB (`GIZMOSQL_MAX_MESSAGE_SIZE_BYTES` overrides it); other clients can
-  keep their defaults because they only ever read one chunk per row.
-- Page text goes up 200 pages per batch.
-- There is intentionally **no server-side view that reassembles a whole file**. DuckDB needs roughly
-  ten times the file size in memory to concatenate large BLOBs; reassembling the 359 MB file above
-  pushed the PoC server past its 4.4 GiB limit and restarted it. Reassemble on the client
-  (`examples/download_document.py`) instead.
+Uploads use `cursor.adbc_ingest` with a `RecordBatchReader`, one record batch per chunk
+(8 MiB by default), over Warp SQL's Arrow IPC transport. Page text is sent in batches of
+200 pages. Downloads read the chunks in `chunk_index` order and verify the SHA-256.
+
+There is no server-side view that concatenates a whole file: large BLOB concatenations can
+use much more memory than the original PDF. Reassemble on the client with
+`examples/download_document.py`.
 
 ## Development
 
 ```shell
 pip install -e ".[dev]"
 ruff check src tests examples
-pytest -q                      # the integration test runs only when GIZMOSQL_HOSTNAME is set
+pytest -q -ra                 # every test, including OCR + live DuckDB and DuckLake integration
 python -m build                # wheel + sdist in dist/
 ```
 
+The suite starts an isolated **Hardcharger 2.0.0** subprocess automatically using the
+`hardcharger==2.0.1` development dependency. The server binary is downloaded and verified
+on first use. Each run uses a temporary DuckDB file, a temporary home and random credentials.
+OCR language data and the DuckDB `fts` / `ducklake` extensions are downloaded when needed;
+missing prerequisites fail tests instead of skipping them. To use your own server instead,
+set `HARDCHARGER_HOSTNAME` and the connection variables above (administrator access and a
+persistent catalog are required; attach a DuckDB catalog named `memory` for the copy-index test).
+`pytest -m "not integration"` runs only the tests that do not need a server.
+
+CI runs the full suite on **Python 3.11, 3.12, 3.13, 3.14 and 3.15**, then builds and checks
+both the wheel and source distribution.
+
 Releases: bump `version` in `pyproject.toml`, move the `[Unreleased]` notes in `CHANGELOG.md` into a version
-section, commit, then `git push origin main vX.Y.Z`. CI runs the tests on Python 3.10 through 3.14, builds the
+section, commit, then `git push origin main vX.Y.Z`. CI runs the tests on Python 3.11 through 3.15, builds the
 wheel and sdist, creates a GitHub Release with that CHANGELOG section as the notes and the artifacts attached,
 and publishes the package to PyPI via
 [trusted publishing](https://docs.pypi.org/trusted-publishers/) (the `pypi` GitHub environment; no token
 secrets).
+
+
+Exact PyPI publisher values and first-release steps are in [docs/publishing.md](docs/publishing.md).
+
+---
+
+<p align="center">
+  <a href="https://gizmodata.com"><img src="https://raw.githubusercontent.com/gizmodata/hardcharger-pdf-loader/main/docs/assets/gizmodata-logo.png" alt="GizmoData™" width="56"></a><br>
+  <sub>Built by <a href="https://gizmodata.com">GizmoData™</a></sub>
+</p>
+<p align="center"><sub>Hardcharger™ and GizmoData™ are trademarks of GizmoData LLC.</sub></p>

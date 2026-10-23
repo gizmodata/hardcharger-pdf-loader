@@ -1,7 +1,8 @@
-.venv
+.venv*/
 .idea
 
 .env*
+!.env.example
 
 __pycache__/
 *.py[cod]
@@ -10,3 +11,4 @@ dist/
 build/
 .pytest_cache/
 .ruff_cache/
+test-results*.xml

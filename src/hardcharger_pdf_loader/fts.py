@@ -12,7 +12,7 @@ Where the index can live depends on the *type* of the target catalog:
 Either way the index is a snapshot: rebuild it after loading documents (``load`` does this
 automatically) and, for an in-memory copy catalog, after a server restart.
 
-Loading the ``fts`` extension needs the GizmoSQL admin role; querying an existing index does not.
+Loading the ``fts`` extension needs the Hardcharger admin role; querying an existing index does not.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from adbc_driver_gizmosql import dbapi as gizmosql
+from adbc_driver_hardcharger import dbapi as hardcharger
 
 from .loader import catalog_type, qualified_schema
 
@@ -67,7 +67,7 @@ class FtsPlan:
 
 
 def plan_fts(
-    conn: gizmosql.Connection,
+    conn: hardcharger.Connection,
     *,
     catalog: str,
     schema: str,
@@ -108,7 +108,7 @@ def plan_fts(
     )
 
 
-def ensure_fts_loaded(conn: gizmosql.Connection) -> None:
+def ensure_fts_loaded(conn: hardcharger.Connection) -> None:
     """Make sure the fts extension is loaded, installing/loading it if this login may."""
     with conn.cursor() as cur:
         cur.execute("SELECT loaded FROM duckdb_extensions() WHERE extension_name = 'fts'")
@@ -120,7 +120,7 @@ def ensure_fts_loaded(conn: gizmosql.Connection) -> None:
             cur.execute("LOAD fts")
         except Exception as exc:
             raise FtsUnavailableError(
-                "The DuckDB 'fts' extension is not loaded and loading it requires the GizmoSQL admin role. "
+                "The DuckDB 'fts' extension is not loaded; loading it requires the Hardcharger admin role. "
                 "Ask an administrator to run 'INSTALL fts; LOAD fts' on the server."
             ) from exc
 
@@ -144,7 +144,7 @@ def fts_ddl(plan: FtsPlan) -> list[str]:
         f"PRAGMA create_fts_index('{plan.indexed_table}', 'page_id', 'page_text', "
         "stemmer = 'english', overwrite = 1)",
         # Ranked search, discoverable next to the data. Fails with "does not exist" if the
-        # index has not been (re)built since a server restart: run `gizmosql-pdf-loader index`.
+        # index has not been (re)built since a server restart: run `hardcharger-pdf-loader index`.
         f"""
         CREATE OR REPLACE MACRO {source}.search_pages_ranked(search_term, top_k := 20) AS TABLE
         SELECT d.file_name,
@@ -165,7 +165,7 @@ def fts_ddl(plan: FtsPlan) -> list[str]:
     return statements
 
 
-def build_fts_index(conn: gizmosql.Connection, plan: FtsPlan) -> int:
+def build_fts_index(conn: hardcharger.Connection, plan: FtsPlan) -> int:
     """Execute the plan; returns the number of pages indexed (0 when skipped)."""
     log.info(
         "FTS plan for %s (type=%s): %s -> %s", plan.target_catalog, plan.target_type, plan.mode, plan.reason

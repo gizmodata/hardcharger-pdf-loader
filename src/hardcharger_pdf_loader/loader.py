@@ -1,8 +1,7 @@
-"""Target schema management and bulk loading into GizmoSQL via ADBC ``adbc_ingest``.
+"""Target schema management and bulk loading into Hardcharger via ADBC ``adbc_ingest``.
 
-Large files are streamed as fixed-size chunks so no single Arrow Flight message exceeds
-the gRPC limit, and so that any SQL client (even one with the default 16 MiB limit) can
-page through ``document_chunks`` to download a file.
+Large files are streamed as fixed-size Arrow IPC batches over Warp SQL so clients can
+page through ``document_chunks`` to download a file without buffering the whole PDF.
 
 There is deliberately no server-side "reassemble the whole file" view: DuckDB needs roughly
 ten times the file size in memory to concatenate large BLOBs (a 360 MB file took the PoC
@@ -17,11 +16,11 @@ import time
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pyarrow as pa
-from adbc_driver_gizmosql import dbapi as gizmosql
+from adbc_driver_hardcharger import dbapi as hardcharger
 
 from . import __version__
 from .pdf_extract import OcrSettings, PageRecord, PdfFileInfo, extract_pages, inspect_pdf, open_for_extraction
@@ -212,7 +211,7 @@ def page_id_for(document_id: str, page_number: int) -> str:
     return f"{document_id}:{page_number}"
 
 
-def catalog_type(conn: gizmosql.Connection, catalog: str) -> str:
+def catalog_type(conn: hardcharger.Connection, catalog: str) -> str:
     """The catalog's engine type per duckdb_databases(): 'duckdb', 'ducklake', 'postgres', ..."""
     with conn.cursor() as cur:
         cur.execute("SELECT type FROM duckdb_databases() WHERE database_name = ?", parameters=[catalog])
@@ -223,7 +222,7 @@ def catalog_type(conn: gizmosql.Connection, catalog: str) -> str:
 
 
 def ensure_schema(
-    conn: gizmosql.Connection, *, schema: str = DEFAULT_SCHEMA, catalog: str | None = None
+    conn: hardcharger.Connection, *, schema: str = DEFAULT_SCHEMA, catalog: str | None = None
 ) -> None:
     with conn.cursor() as cur:
         for statement in schema_ddl(schema, catalog=catalog):
@@ -231,7 +230,7 @@ def ensure_schema(
     _migrate_page_id(conn, schema=schema, catalog=catalog)
 
 
-def _migrate_page_id(conn: gizmosql.Connection, *, schema: str, catalog: str | None) -> None:
+def _migrate_page_id(conn: hardcharger.Connection, *, schema: str, catalog: str | None) -> None:
     """Add and backfill ``document_pages.page_id`` on tables created before the column existed."""
     qs = qualified_schema(catalog, schema)
     with conn.cursor() as cur:
@@ -332,7 +331,7 @@ def documents_batch(
         "pages_with_text": sum(1 for p in pages if p.page_text.strip()),
         "pages_ocr": sum(1 for p in pages if p.extraction_method == "ocr"),
         "total_text_chars": sum(p.char_count for p in pages),
-        "loaded_at": datetime.now(tz=timezone.utc),
+        "loaded_at": datetime.now(tz=UTC),
         "loaded_by": loaded_by,
         "loader_version": __version__,
     }
@@ -366,7 +365,7 @@ class LoadResult:
 
 
 def find_existing_document(
-    conn: gizmosql.Connection, *, schema: str, sha256_hex: str, catalog: str | None = None
+    conn: hardcharger.Connection, *, schema: str, sha256_hex: str, catalog: str | None = None
 ) -> str | None:
     qs = qualified_schema(catalog, schema)
     with conn.cursor() as cur:
@@ -378,13 +377,11 @@ def find_existing_document(
 
 
 def delete_document(
-    conn: gizmosql.Connection, *, schema: str, document_id: str, catalog: str | None = None
+    conn: hardcharger.Connection, *, schema: str, document_id: str, catalog: str | None = None
 ) -> None:
     """Delete every row of a document from the three tables, verifying the rows are gone.
 
-    Requires adbc-driver-gizmosql >= 2.0.13: earlier versions ran parameterized DML lazily,
-    so a DELETE with bound parameters intermittently did nothing. The verification stays as
-    a safety net.
+    Checks the affected tables after each parameterized DELETE before reloading.
     """
     qs = qualified_schema(catalog, schema)
     with conn.cursor() as cur:
@@ -398,14 +395,14 @@ def delete_document(
                 )
 
 
-def current_user(conn: gizmosql.Connection) -> str | None:
+def current_user(conn: hardcharger.Connection) -> str | None:
     with conn.cursor() as cur:
-        cur.execute("SELECT GIZMOSQL_USER()")
+        cur.execute("SELECT HARDCHARGER_USER()")
         row = cur.fetchone()
     return row[0] if row else None
 
 
-def load_pdf(conn: gizmosql.Connection, path: Path, options: LoadOptions) -> LoadResult:
+def load_pdf(conn: hardcharger.Connection, path: Path, options: LoadOptions) -> LoadResult:
     """Load one PDF: its bytes (chunked), its per-page text, and its metadata row."""
     started = time.perf_counter()
     path = Path(path)

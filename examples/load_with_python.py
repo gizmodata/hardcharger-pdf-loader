@@ -1,6 +1,6 @@
-"""Use gizmosql-pdf-loader as a library: load a directory of PDFs, index them, run a search.
+"""Use hardcharger-pdf-loader as a library: load a directory of PDFs, index them, run a search.
 
-Connection details come from GIZMOSQL_* environment variables (or a .env file); the catalog and
+Connection details come from HARDCHARGER_* environment variables (or a .env file); the catalog and
 schema are given explicitly below. Run: python examples/load_with_python.py source_pdf_files
 """
 
@@ -9,8 +9,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from gizmosql_pdf_loader import (
-    GizmoSQLSettings,
+from hardcharger_pdf_loader import (
+    HardchargerSettings,
     LoadOptions,
     OcrSettings,
     build_fts_index,
@@ -25,8 +25,8 @@ CATALOG = "my_lake"
 SCHEMA = "pdf_docs"
 source_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "source_pdf_files")
 
-# GizmoSQLSettings(hostname=..., port=..., username=..., password=...) also works without env vars.
-settings = GizmoSQLSettings.from_env()
+# HardchargerSettings(hostname=..., port=..., username=..., password=...) also works without env vars.
+settings = HardchargerSettings.from_env()
 
 with settings.connect(catalog=CATALOG) as conn:
     ensure_schema(conn, catalog=CATALOG, schema=SCHEMA)  # idempotent: tables, views, macros, migrations

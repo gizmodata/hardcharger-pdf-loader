@@ -1,11 +1,11 @@
-import gizmosql_pdf_loader as pkg
+import hardcharger_pdf_loader as pkg
 
 
 def test_public_exports_are_importable():
     for name in pkg.__all__:
         assert hasattr(pkg, name), name
     for name in (
-        "GizmoSQLSettings",
+        "HardchargerSettings",
         "LoadOptions",
         "OcrSettings",
         "ensure_schema",

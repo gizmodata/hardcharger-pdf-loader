@@ -1,4 +1,4 @@
-from gizmosql_pdf_loader.fts import MODE_COPY, MODE_IN_CATALOG, MODE_SKIP, FtsPlan, fts_ddl
+from hardcharger_pdf_loader.fts import MODE_COPY, MODE_IN_CATALOG, MODE_SKIP, FtsPlan, fts_ddl
 
 
 def _plan(mode, **kw):
