@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "hardcharger-pdf-loader"
 version = "0.1.0"
-description = "Load PDF files (bytes + extracted page text + metadata) into a Hardcharger server over Warp SQL / ADBC."
+description = "Load PDF files (bytes + extracted page text + metadata) into a Hardcharger server over Chargewire / ADBC."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
-keywords = ["hardcharger", "pdf", "adbc", "warp-sql", "ocr", "full-text-search"]
+keywords = ["hardcharger", "pdf", "adbc", "chargewire", "ocr", "full-text-search"]
 authors = [{ name = "GizmoData", email = "support@gizmodata.com" }]
 classifiers = [
     "Development Status :: 3 - Alpha",

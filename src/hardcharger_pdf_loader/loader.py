@@ -1,6 +1,6 @@
 """Target schema management and bulk loading into Hardcharger via ADBC ``adbc_ingest``.
 
-Large files are streamed as fixed-size Arrow IPC batches over Warp SQL so clients can
+Large files are streamed as fixed-size Arrow IPC batches over Chargewire so clients can
 page through ``document_chunks`` to download a file without buffering the whole PDF.
 
 There is deliberately no server-side "reassemble the whole file" view: DuckDB needs roughly

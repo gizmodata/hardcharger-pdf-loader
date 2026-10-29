@@ -115,7 +115,7 @@ def main(env_file: Path, verbose: bool) -> None:
     type=click.IntRange(min=1, max=512),
     default=DEFAULT_CHUNK_SIZE_BYTES // (1024 * 1024),
     show_default=True,
-    help="Size of each stored file chunk sent in an Arrow IPC batch over Warp SQL.",
+    help="Size of each stored file chunk sent in an Arrow IPC batch over Chargewire.",
 )
 @click.option("--replace", is_flag=True, help="Reload documents whose SHA-256 is already present.")
 @click.option(

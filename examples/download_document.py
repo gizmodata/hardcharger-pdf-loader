@@ -1,6 +1,6 @@
 """Download a loaded PDF back out of Hardcharger by streaming its chunks in order.
 
-Reads one chunk at a time (8 MiB by default) over Warp SQL and verifies the SHA-256
+Reads one chunk at a time (8 MiB by default) over Chargewire and verifies the SHA-256
 recorded at load time.
 
 Usage: python examples/download_document.py "parts-manual-2.pdf" /tmp/parts-manual-2.pdf

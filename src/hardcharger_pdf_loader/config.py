@@ -48,7 +48,7 @@ class HardchargerSettings:
         return uri
 
     def connect(self, *, catalog: str | None = None, db_schema: str | None = None) -> hardcharger.Connection:
-        """Open a DBAPI connection over Warp SQL.
+        """Open a DBAPI connection over Chargewire.
 
         ``catalog`` becomes the session's current catalog. It must already be attached on the
         server (attaching requires the Hardcharger admin role).

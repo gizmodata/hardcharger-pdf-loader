@@ -5,6 +5,12 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- The loader now uses the Chargewire protocol through the Hardcharger ADBC driver, and its
+  package description, keywords and documentation name it. It still works with Hardcharger
+  servers released before the rename; connection settings and `HARDCHARGER_*` variables are
+  unchanged.
+
 ## [0.1.0] - 2026-10-23
 
 ### Added
@@ -13,7 +19,7 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `hardcharger-pdf-loader load|list|search|index` and `python -m hardcharger_pdf_loader`.
 - Importable `hardcharger_pdf_loader` API with `HardchargerSettings`, `LoadOptions`, OCR,
   PDF metadata and page extraction, chunked byte uploads/downloads and BM25 full-text search.
-- Native Hardcharger ADBC driver 2.0.2+ over Warp SQL, `hardcharger://` URIs, TLS by default
+- Native Hardcharger ADBC driver 2.0.2+ over Chargewire, `hardcharger://` URIs, TLS by default
   and `?tls=false` for plain HTTP; `HARDCHARGER_*` environment configuration.
 - All upstream test cases, with live coverage for both DuckDB and DuckLake, including
   replacement, byte-for-byte reconstruction, OCR and ranked search. Live tests start the
@@ -23,5 +29,5 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   publishing through the `pypi` environment in `ci.yml`.
 
 ### Changed
-- Removed Flight SQL/gRPC connection settings and limits; uploads stream Arrow IPC over Warp SQL.
+- Removed Flight SQL/gRPC connection settings and limits; uploads stream Arrow IPC over Chargewire.
 - Requires Python 3.11+ to match the released Hardcharger ADBC driver and PyArrow.

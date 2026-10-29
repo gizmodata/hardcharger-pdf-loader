@@ -15,13 +15,13 @@
   <a href="https://pypi.org/project/hardcharger-pdf-loader/"><img src="https://img.shields.io/badge/Python-3.11–3.15-3776AB?logo=python&amp;logoColor=white" alt="Python 3.11–3.15"></a>
   <a href="https://pypi.org/project/hardcharger-pdf-loader/"><img src="https://img.shields.io/pepy/dt/hardcharger-pdf-loader.svg" alt="PyPI downloads"></a>
   <a href="https://github.com/gizmodata/hardcharger-adbc"><img src="https://img.shields.io/badge/driver-Hardcharger%20ADBC-f15a24.svg" alt="Hardcharger ADBC driver"></a>
-  <a href="https://github.com/gizmodata/warp-sql"><img src="https://img.shields.io/badge/protocol-Warp%20SQL-31a8db.svg" alt="Warp SQL protocol"></a>
+  <a href="https://github.com/gizmodata/chargewire"><img src="https://img.shields.io/badge/protocol-Chargewire-31a8db.svg" alt="Chargewire protocol"></a>
   <a href="https://github.com/gizmodata/hardcharger-pdf-loader/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg" alt="Apache 2.0 license"></a>
   <a href="https://gizmodata.com"><img src="https://img.shields.io/badge/by-GizmoData%E2%84%A2-f15a24.svg" alt="GizmoData™"></a>
 </p>
 
 Load PDF files into a [Hardcharger™](https://github.com/gizmodata/hardcharger) server over
-[Warp SQL](https://github.com/gizmodata/warp-sql) / ADBC so SQL clients and
+[Chargewire](https://github.com/gizmodata/chargewire) / ADBC so SQL clients and
 [Hardcharger MCP](https://github.com/gizmodata/hardcharger-mcp) agents can **search the text**
 and **download the original files**.
 
@@ -33,7 +33,7 @@ For every PDF the loader stores:
 | What | Where | Notes |
 |---|---|---|
 | File metadata | `documents` | name, path, MIME type, size, SHA-256, page count, PDF info (title, author, creator, producer, dates), encryption, optional-content layers, load stats |
-| File bytes | `document_chunks` | fixed-size chunks (default 8 MiB), streamed as Arrow IPC over Warp SQL |
+| File bytes | `document_chunks` | fixed-size chunks (default 8 MiB), streamed as Arrow IPC over Chargewire |
 | Page text | `document_pages` | one row per page, with page label, size, rotation, image count and how the text was obtained (`native`, `ocr`, `none`) |
 | Whole text | `document_text` (view) | pages joined with form-feed characters |
 | Search helpers | `search_pages(term)`, `search_pages_ranked(term, top_k)` (table macros) | case-insensitive substring search with a snippet; BM25-ranked full-text search (stemmed) |
@@ -288,7 +288,7 @@ Use this only for documents you are entitled to read outside the vendor's viewer
 ## Streaming file bytes
 
 Uploads use `cursor.adbc_ingest` with a `RecordBatchReader`, one record batch per chunk
-(8 MiB by default), over Warp SQL's Arrow IPC transport. Page text is sent in batches of
+(8 MiB by default), over Chargewire's Arrow IPC transport. Page text is sent in batches of
 200 pages. Downloads read the chunks in `chunk_index` order and verify the SHA-256.
 
 There is no server-side view that concatenates a whole file: large BLOB concatenations can

@@ -6,7 +6,7 @@ deterministic document IDs, chunk streaming/reconstruction, page batching, DuckL
 DDL, FTS plans, PDF dates/metadata/text, hidden layers, language-data resolution, OCR,
 and live load/list/search/replace and BM25 stemming.
 
-The live tests use `adbc-driver-hardcharger` over Warp SQL against the released
+The live tests use `adbc-driver-hardcharger` over Chargewire against the released
 Hardcharger 2.0.0 server. Each original live test now runs for both a persistent DuckDB
 catalog and a DuckLake catalog. Missing language data or extensions fails the suite;
 there are no prerequisite-based skips.
