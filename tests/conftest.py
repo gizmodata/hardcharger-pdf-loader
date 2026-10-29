@@ -25,7 +25,7 @@ def server_settings(tmp_path_factory):
     workdir = tmp_path_factory.mktemp("hardcharger")
     with Server(
         database=workdir / "pdf_loader.duckdb",
-        version="2.0.0",
+        version="2.3.0",
         env={"HOME": str(workdir), "USERPROFILE": str(workdir)},
         log_file=workdir / "server.log",
     ) as server:

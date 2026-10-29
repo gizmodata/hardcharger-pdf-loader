@@ -5,11 +5,15 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-29
+
 ### Changed
 - The loader now uses the Chargewire protocol through the Hardcharger ADBC driver, and its
   package description, keywords and documentation name it. It still works with Hardcharger
   servers released before the rename; connection settings and `HARDCHARGER_*` variables are
   unchanged.
+- The live tests run against the released Hardcharger 2.3.0 server (development dependency
+  `hardcharger==2.3.0`, was 2.0.0) with the current `adbc-driver-hardcharger` (2.1.0).
 
 ## [0.1.0] - 2026-10-23
 

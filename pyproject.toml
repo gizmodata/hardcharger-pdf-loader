@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hardcharger-pdf-loader"
-version = "0.1.0"
+version = "0.2.0"
 description = "Load PDF files (bytes + extracted page text + metadata) into a Hardcharger server over Chargewire / ADBC."
 readme = "README.md"
 license = "Apache-2.0"
@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "build", "ruff", "twine", "hardcharger==2.0.1"]
+dev = ["pytest>=8", "build", "ruff", "twine", "hardcharger==2.3.0"]
 
 [project.scripts]
 hardcharger-pdf-loader = "hardcharger_pdf_loader.cli:main"
