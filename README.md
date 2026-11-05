@@ -309,8 +309,10 @@ The suite starts an isolated **Hardcharger 2.7.0** subprocess automatically usin
 on first use. Each run uses a temporary DuckDB file, a temporary home and random credentials.
 OCR language data and the DuckDB `fts` / `ducklake` extensions are downloaded when needed;
 missing prerequisites fail tests instead of skipping them. To use your own server instead,
-set `HARDCHARGER_HOSTNAME` and the connection variables above (administrator access and a
-persistent catalog are required; attach a DuckDB catalog named `memory` for the copy-index test).
+set `HARDCHARGER_PDF_LOADER_TEST_HOSTNAME` (and `_PORT`, `_USERNAME`, `_PASSWORD`, `_USE_TLS`,
+`_TLS_SKIP_VERIFY` with the same prefix; administrator access and a persistent catalog are required;
+attach a DuckDB catalog named `memory` for the copy-index test). The suite never reads the loader's own
+`HARDCHARGER_*` variables or `.env`, which may name a real server: it removes them for the run.
 `pytest -m "not integration"` runs only the tests that do not need a server.
 
 CI runs the full suite on **Python 3.11, 3.12, 3.13, 3.14 and 3.15**, then builds and checks

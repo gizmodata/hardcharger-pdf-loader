@@ -5,6 +5,12 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The test suite no longer reads the loader's own `HARDCHARGER_*` connection variables or `.env`, which could
+  send a test run (and its writes) to a real server: an own server is named by `HARDCHARGER_PDF_LOADER_TEST_*`
+  variables, and the loader's variables are removed from the environment for the run.
+
 ## [0.2.1] - 2026-11-05
 
 ### Fixed
