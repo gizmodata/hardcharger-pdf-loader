@@ -7,7 +7,7 @@ DDL, FTS plans, PDF dates/metadata/text, hidden layers, language-data resolution
 and live load/list/search/replace and BM25 stemming.
 
 The live tests use `adbc-driver-hardcharger` over Chargewire against the released
-Hardcharger 2.3.0 server. Each original live test now runs for both a persistent DuckDB
+Hardcharger 2.7.0 server. Each original live test now runs for both a persistent DuckDB
 catalog and a DuckLake catalog. Missing language data or extensions fails the suite;
 there are no prerequisite-based skips.
 
@@ -16,16 +16,15 @@ the actual load/list/search/index CLI, the downloadable Python example with byte
 and SHA-256 verification, recorded Hardcharger user identity, and cleanup of partially
 uploaded data after an error. The CLI and error-cleanup tests run for both catalog types.
 
-Validated locally on macOS arm64 on 2026-10-29 against Hardcharger 2.3.0:
+Validated locally on macOS arm64 on 2026-11-05 against Hardcharger 2.7.0:
 
 | Python | ADBC driver | Result |
 |---|---|---|
-| 3.11.15 | 2.1.0 | 42 passed, 0 skipped |
-| 3.11.15 | 2.0.2 (the floor) | 42 passed, 0 skipped |
-| 3.12.15 | 2.1.0 | 42 passed, 0 skipped |
-| 3.13.17 | 2.1.0 | 42 passed, 0 skipped |
-| 3.14.9 | 2.1.0 | 42 passed, 0 skipped |
-| 3.15.1 | 2.1.0 | 42 passed, 0 skipped |
+| 3.11.15 | 2.3.0 (also the floor) | 42 passed, 0 skipped |
+| 3.12.15 | 2.3.0 | 42 passed, 0 skipped |
+| 3.13.17 | 2.3.0 | 42 passed, 0 skipped |
+| 3.14.9 | 2.3.0 | 42 passed, 0 skipped |
+| 3.15.1 | 2.3.0 | 42 passed, 0 skipped |
 
 The wheel and sdist pass `twine check --strict`. CI repeats the full suite on Ubuntu for Python 3.11–3.15 on every
 push and pull request. PyMuPDF emits third-party deprecation warnings on these versions.

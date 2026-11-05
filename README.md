@@ -48,9 +48,9 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install hardcharger-pdf-loader          # or: pip install dist/hardcharger_pdf_loader-*.whl
 ```
 
-Python **3.11–3.15**. Tested with Hardcharger server **2.3.0** and ADBC driver **2.1.0**.
+Python **3.11–3.15**. Tested with Hardcharger server **2.7.0** and ADBC driver **2.3.0**.
 
-Dependencies: `adbc-driver-hardcharger` (>= 2.0.2), `pyarrow`, `pymupdf`, `click`, `python-dotenv`.
+Dependencies: `adbc-driver-hardcharger` (>= 2.3.0), `pyarrow`, `pymupdf`, `click`, `python-dotenv`.
 
 OCR of image-only pages needs no extra install: the Tesseract engine ships inside the PyMuPDF wheel, and the
 only external piece, the trained language data (`eng.traineddata`, about 4 MB), is downloaded on first use into
@@ -304,8 +304,8 @@ pytest -q -ra                 # every test, including OCR + live DuckDB and Duck
 python -m build                # wheel + sdist in dist/
 ```
 
-The suite starts an isolated **Hardcharger 2.3.0** subprocess automatically using the
-`hardcharger==2.3.0` development dependency. The server binary is downloaded and verified
+The suite starts an isolated **Hardcharger 2.7.0** subprocess automatically using the
+`hardcharger==2.7.0` development dependency. The server binary is downloaded and verified
 on first use. Each run uses a temporary DuckDB file, a temporary home and random credentials.
 OCR language data and the DuckDB `fts` / `ducklake` extensions are downloaded when needed;
 missing prerequisites fail tests instead of skipping them. To use your own server instead,

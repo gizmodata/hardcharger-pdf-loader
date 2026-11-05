@@ -5,6 +5,17 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-05
+
+### Fixed
+- Requires `adbc-driver-hardcharger` 2.3.0 or later (was 2.0.2). With 2.3.0, a session that the driver opens to
+  replace a lost one (for example after the server evicted an idle session or its token expired) keeps the
+  connection's `adbc.hardcharger.setting.*` settings and session/query tags; earlier drivers dropped them.
+
+### Changed
+- The live tests run against the released Hardcharger 2.7.0 server (development dependency
+  `hardcharger==2.7.0`, was 2.3.0).
+
 ## [0.2.0] - 2026-10-29
 
 ### Changed
