@@ -48,9 +48,9 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install hardcharger-pdf-loader          # or: pip install dist/hardcharger_pdf_loader-*.whl
 ```
 
-Python **3.11–3.15**. Tested with Hardcharger server **2.7.0** and ADBC driver **2.3.0**.
+Python **3.11–3.15**. Tested with Hardcharger server **2.7.0** and ADBC driver **2.5.0**.
 
-Dependencies: `adbc-driver-hardcharger` (>= 2.3.0), `pyarrow`, `pymupdf`, `click`, `python-dotenv`.
+Dependencies: `adbc-driver-hardcharger` (>= 2.5.0), `pyarrow`, `pymupdf`, `click`, `python-dotenv`.
 
 OCR of image-only pages needs no extra install: the Tesseract engine ships inside the PyMuPDF wheel, and the
 only external piece, the trained language data (`eng.traineddata`, about 4 MB), is downloaded on first use into

@@ -5,8 +5,14 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-13
+
 ### Fixed
 
+- Requires `adbc-driver-hardcharger` 2.5.0 or later (was 2.3.0). Earlier drivers applied a catalog and a schema
+  given together at connect in a random order, usually the schema first, in the server's default catalog: the
+  connect failed, or opened in the catalog's `main` schema without an error. 2.5.0 applies the catalog first.
+  The loader's `HardchargerSettings.connect(catalog=..., db_schema=...)` passes both to the driver.
 - The test suite no longer reads the loader's own `HARDCHARGER_*` connection variables or `.env`, which could
   send a test run (and its writes) to a real server: an own server is named by `HARDCHARGER_PDF_LOADER_TEST_*`
   variables, and the loader's variables are removed from the environment for the run.

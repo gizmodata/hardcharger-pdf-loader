@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hardcharger-pdf-loader"
-version = "0.2.1"
+version = "0.2.2"
 description = "Load PDF files (bytes + extracted page text + metadata) into a Hardcharger server over Chargewire / ADBC."
 readme = "README.md"
 license = "Apache-2.0"
@@ -24,7 +24,7 @@ classifiers = [
     "Topic :: Database",
 ]
 dependencies = [
-    "adbc-driver-hardcharger>=2.3.0",
+    "adbc-driver-hardcharger>=2.5.0",
     "pyarrow>=26.0.0",
     "pymupdf>=1.26.0",
     "click>=8.1",
